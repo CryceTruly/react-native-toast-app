@@ -2,9 +2,16 @@ import {useFocusEffect} from '@react-navigation/core';
 import React, {useCallback} from 'react';
 import {Dimensions, View} from 'react-native';
 import Button from '../components/Button';
+import toast from '../helpers/toast';
 
 function Detail({navigation}) {
-  useFocusEffect(useCallback(() => {}, []));
+  useFocusEffect(
+    useCallback(() => {
+      return () => {
+        toast.info({message: 'You left me'});
+      };
+    }, []),
+  );
 
   return (
     <View
