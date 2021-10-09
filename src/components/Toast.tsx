@@ -13,16 +13,29 @@ import Animated, {
   useSharedValue,
   useAnimatedStyle,
 } from 'react-native-reanimated';
+import toastStyles from './toastStyles';
 
+type Colors = {
+  info: string;
+  success: string;
+  danger: string;
+};
 const colors = {
   info: '#343a40',
   success: '#28a745',
   danger: '#dc3545',
+} as Colors;
+
+type ToastData = {
+  useNativeToast?: boolean;
+  message: string;
+  duration?: number;
+  type: keyof Colors;
 };
 
 const Toast = () => {
-  const [messageType, setMessageType] = useState(null);
-  const timeOutRef = useRef(null);
+  const [messageType, setMessageType] = useState<null | keyof Colors>(null);
+  const timeOutRef = useRef<null | NodeJS.Timer>(null);
 
   const animatedOpacity = useSharedValue(0);
 
@@ -34,9 +47,9 @@ const Toast = () => {
 
   const [timeOutDuration, setTimeOutDuration] = useState(5000);
 
-  const [message, setMessage] = useState(null);
+  const [message, setMessage] = useState<null | string>(null);
 
-  const onNewToast = data => {
+  const onNewToast = (data: ToastData) => {
     if (Platform.OS === 'android' && data.useNativeToast) {
       return ToastAndroid.show(data.message, ToastAndroid.LONG);
     }
@@ -51,7 +64,7 @@ const Toast = () => {
     setMessage(null);
     setTimeOutDuration(5000);
     animatedOpacity.value = withTiming(0);
-    clearInterval(timeOutRef.current);
+    clearInterval(timeOutRef.current as NodeJS.Timeout);
   }, [animatedOpacity]);
 
   useEffect(() => {
@@ -66,7 +79,7 @@ const Toast = () => {
     }
 
     return () => {
-      clearInterval(timeOutRef.current);
+      clearInterval(timeOutRef.current as NodeJS.Timeout);
     };
   }, [closeToast, message, timeOutDuration]);
 
@@ -91,28 +104,12 @@ const Toast = () => {
   return (
     <Animated.View
       style={[
-        {
-          position: 'absolute',
-          bottom: '4%',
-          left: '4%',
-          right: '4%',
-          backgroundColor: colors[messageType],
-          zIndex: 1,
-          elevation: 1,
-          borderRadius: 4,
-        },
+        toastStyles.wrapper,
+        {backgroundColor: messageType ? colors[messageType] : 'blue'},
         animatedStyle,
       ]}>
       <TouchableOpacity onPress={closeToast}>
-        <Text
-          style={{
-            padding: 14,
-            color: 'white',
-            fontSize: 16,
-            textAlign: 'center',
-          }}>
-          {message}
-        </Text>
+        <Text style={toastStyles.text}>{message}</Text>
       </TouchableOpacity>
     </Animated.View>
   );
